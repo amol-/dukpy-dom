@@ -19,10 +19,9 @@ expression could be a DOM node — dukpy cannot marshal DOM nodes back to Python
 ```python
 from dukpy_dom.interpreter import VirtualDomInterpreter
 from dukpy_dom.testing import DomInteractor
-from dukpy_dom.vue import load_vue
 
 interpreter = VirtualDomInterpreter()
-load_vue(interpreter)  # pinned Vue 3.5.13 browser build, offline
+interpreter.load_framework("vue")  # pinned Vue 3.5.13 browser build, offline
 
 interpreter.evaljs(
     'document.body.innerHTML = \'<div id="app"></div>\';'
@@ -42,11 +41,10 @@ assert "Count: 1" in interpreter.html()
 
 ```python
 from dukpy_dom.interpreter import VirtualDomInterpreter
-from dukpy_dom.react import load_react
 from dukpy_dom.testing import DomInteractor
 
 interpreter = VirtualDomInterpreter()
-load_react(interpreter)  # pinned React 18.3.1 builds, offline
+interpreter.load_framework("react", "react-dom")  # pinned React 18.3.1 builds, offline
 
 interpreter.evaljs(
     'document.body.innerHTML = \'<div id="root"></div>\';'
@@ -115,11 +113,11 @@ journey.
 ## Testing with your own framework version
 
 By default the pinned vendored builds load. To test against the framework
-version your application uses, point the loader at your own browser builds
-instead:
+version your application uses, pass your own browser build paths to
+`load_framework` instead:
 
-- Vue: `load_vue(interpreter, bundle="/path/to/vue.global.prod.js")`
-- React: `load_react(interpreter, react_bundle="...", react_dom_bundle="...")`
+- Vue: `interpreter.load_framework("/path/to/vue.global.prod.js")`
+- React: `interpreter.load_framework("/path/to/react.js", "/path/to/react-dom.js")`
   — `react-dom`'s UMD client build (React 18 exposes `createRoot`)
 - Svelte: always your own version — the compile recipe above uses whatever
   `svelte/compiler` you install

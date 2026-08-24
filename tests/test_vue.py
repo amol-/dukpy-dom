@@ -3,24 +3,23 @@
 import shutil
 
 from dukpy_dom.interpreter import VirtualDomInterpreter
-from dukpy_dom.vue import _VUE_RUNTIME, load_vue
 
 
-def test_load_vue_exposes_vue_global():
+def test_load_framework_vue_exposes_vue_global():
     interpreter = VirtualDomInterpreter()
-    load_vue(interpreter)
+    interpreter.load_framework("vue")
     assert interpreter.evaljs("typeof Vue;") == "object"
 
 
-def test_load_vue_is_pinned_version():
+def test_load_framework_vue_is_pinned_version():
     interpreter = VirtualDomInterpreter()
-    load_vue(interpreter)
+    interpreter.load_framework("vue")
     assert interpreter.evaljs("Vue.version;") == "3.5.13"
 
 
 def test_create_app_returns_mountable_app():
     interpreter = VirtualDomInterpreter()
-    load_vue(interpreter)
+    interpreter.load_framework("vue")
     assert interpreter.evaljs(
         "typeof Vue.createApp; var app = Vue.createApp({ template: '<div>hi</div>' }); "
         "typeof app.mount;"
@@ -29,7 +28,7 @@ def test_create_app_returns_mountable_app():
 
 def test_mount_renders_component_without_reference_error():
     interpreter = VirtualDomInterpreter()
-    load_vue(interpreter)
+    interpreter.load_framework("vue")
     interpreter.evaljs(
         "document.body.innerHTML = '<div id=\"app\"></div>'; "
         "var app = Vue.createApp({ template: '<div>hi</div>' }); "
@@ -40,7 +39,7 @@ def test_mount_renders_component_without_reference_error():
 
 def test_mount_renders_svg_component():
     interpreter = VirtualDomInterpreter()
-    load_vue(interpreter)
+    interpreter.load_framework("vue")
     interpreter.evaljs(
         "document.body.innerHTML = '<div id=\"app\"></div>'; "
         "var app = Vue.createApp({ template: '<svg><rect width=\"10\" height=\"5\"></rect></svg>' }); "
@@ -53,7 +52,7 @@ def test_mount_renders_svg_component():
 
 def test_mount_renders_xlink_href_attribute():
     interpreter = VirtualDomInterpreter()
-    load_vue(interpreter)
+    interpreter.load_framework("vue")
     interpreter.evaljs(
         "document.body.innerHTML = '<div id=\"app\"></div>'; "
         "var app = Vue.createApp({ template: '<svg><use xlink:href=\"#icon\"></use></svg>' }); "
@@ -64,7 +63,7 @@ def test_mount_renders_xlink_href_attribute():
 
 def test_mount_renders_static_style_attribute():
     interpreter = VirtualDomInterpreter()
-    load_vue(interpreter)
+    interpreter.load_framework("vue")
     interpreter.evaljs(
         "document.body.innerHTML = '<div id=\"app\"></div>'; "
         "var app = Vue.createApp({ template: '<div style=\"color: red\">hi</div>' }); "
@@ -73,12 +72,12 @@ def test_mount_renders_static_style_attribute():
     assert 'style="color: red;"' in interpreter.html()
 
 
-def test_load_vue_loads_user_provided_bundle(tmp_path):
+def test_load_framework_vue_loads_user_provided_bundle(tmp_path):
     # F-VUE-RENDER-S004: a user-provided build replaces the pinned one.
     bundle = tmp_path / "vue.global.prod.js"
     bundle.write_text("var Vue = {version: '9.9.9'};", encoding="utf-8")
     interpreter = VirtualDomInterpreter()
-    load_vue(interpreter, bundle=str(bundle))
+    interpreter.load_framework(str(bundle))
     assert interpreter.evaljs("typeof Vue;") == "object"
     assert interpreter.evaljs("Vue.version;") == "9.9.9"
 
@@ -86,10 +85,12 @@ def test_load_vue_loads_user_provided_bundle(tmp_path):
 def test_user_provided_bundle_mounts_component(tmp_path):
     # F-VUE-RENDER-S004: loading the real Vue build from a user path (not the
     # internal pinned default) still mounts and renders into html().
+    import os
     bundle = tmp_path / "vue.global.prod.js"
-    shutil.copyfile(_VUE_RUNTIME, bundle)
+    source = os.path.join(os.path.dirname(__file__), "..", "dukpy_dom", "vendor", "vue.global.prod.js")
+    shutil.copyfile(source, bundle)
     interpreter = VirtualDomInterpreter()
-    load_vue(interpreter, bundle=str(bundle))
+    interpreter.load_framework(str(bundle))
     interpreter.evaljs(
         "document.body.innerHTML = '<div id=\"app\"></div>'; "
         "var app = Vue.createApp({ template: '<div>hi</div>' }); "

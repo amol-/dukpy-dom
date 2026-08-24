@@ -5,6 +5,11 @@ from dukpy import JSInterpreter
 
 _RUNTIME = os.path.join(os.path.dirname(__file__), "runtime.js")
 
+# Pinned framework bundles for offline loading
+_VUE_BUNDLE = os.path.join(os.path.dirname(__file__), "vendor", "vue.global.prod.js")
+_REACT_BUNDLE = os.path.join(os.path.dirname(__file__), "vendor", "react.production.min.js")
+_REACT_DOM_BUNDLE = os.path.join(os.path.dirname(__file__), "vendor", "react-dom.production.min.js")
+
 
 @lru_cache(maxsize=32)
 def _fetch_url(url: str, timeout: int = 10) -> str:
@@ -67,7 +72,8 @@ class VirtualDomInterpreter:
         Always injects 'var self = globalThis;' for compatibility with
         frameworks that require it (like React's UMD wrapper).
 
-        :param sources: One or more URLs or file paths to framework bundles.
+        :param sources: One or more URLs, file paths, or framework names.
+                       Framework names: "vue", "react", "react-dom".
                        Supports http://, https://, file://, and local paths.
         :param timeout: Timeout in seconds for URL fetches (default: 10).
         :return: self, for chaining.
@@ -75,24 +81,39 @@ class VirtualDomInterpreter:
 
         Example::
 
-            # Load React from unpkg
+            # Load pinned Vue bundle (offline)
+            interp.load_framework("vue")
+
+            # Load pinned React bundles (offline)
+            interp.load_framework("react", "react-dom")
+
+            # Load from unpkg
             interp.load_framework(
                 "https://unpkg.com/react@18/umd/react.production.min.js",
                 "https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
             )
 
-            # Load Vue from local file
+            # Load from local file
             interp.load_framework("path/to/vue.global.prod.js")
 
             # Chain with other operations
-            interp.load_framework("https://.../vue.js").evaljs("Vue.createApp({}).mount('#app')")
+            interp.load_framework("vue").evaljs("Vue.createApp({}).mount('#app')")
         """
         # Always inject shim for safety (harmless for Vue, required for React)
         self.evaljs("var self = globalThis;")
 
+        # Framework name mapping
+        framework_paths = {
+            "vue": _VUE_BUNDLE,
+            "react": _REACT_BUNDLE,
+            "react-dom": _REACT_DOM_BUNDLE,
+        }
+
         for source in sources:
             try:
-                content = _get_content(source, timeout)
+                # Resolve framework name to path
+                resolved = framework_paths.get(source, source)
+                content = _get_content(resolved, timeout)
                 self.evaljs(content)
             except Exception as e:
                 raise ValueError(f"Failed to load {source}: {e}") from e

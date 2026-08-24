@@ -1,129 +1,15 @@
-// DONE(EVO-001): Core DOM node types
-// Why:
-// - Vue 3 and JavaScript code need a virtual DOM to manipulate
-// Done:
-// - TextNode, Element, and Document classes are implemented
-// - Each node has nodeType, nodeName, and parentNode properties
-// Non-Goals:
-// - Do not implement full browser DOM (only what Vue needs)
-// - Do not implement layout or CSSOM
 
-// DONE(EVO-002): DOM mutation APIs
-// Why:
-// - Vue 3 needs to create and manipulate DOM nodes
-// Done:
-// - appendChild, removeChild, insertBefore, replaceChild implemented
-// - All methods handle parentNode references correctly
-// Non-Goals:
-// - Do not implement DOM parsing from HTML strings yet
-// - Do not implement complex DOM ranges
 
-// DONE(EVO-003): Attribute management
-// Why:
-// - Vue 3 uses attributes for directives and props
-// Done:
-// - setAttribute, getAttribute, removeAttribute, hasAttribute implemented
-// - Attributes are string-coerced and stored on elements
-// Non-Goals:
-// - Do not implement attribute validation
-// - Do not implement special attribute behaviors
 
-// DONE(EVO-004): HTML serialization
-// Why:
-// - Python needs to inspect the DOM state as HTML
-// Done:
-// - toHTML() implemented on all node types
-// - Proper escaping for text content and attributes
-// Non-Goals:
-// - Do not implement pretty-printing
-// - Do not handle void elements specially
 
-// DONE(EVO-005): Basic element properties
-// Why:
-// - Vue 3 and tests need common element properties
-// Done:
-// - id, className, textContent properties implemented
-// - Properties use getters/setters for consistency
-// Non-Goals:
-// - Do not implement all HTML element properties
-// - Do not implement computed style properties
 
-// DONE(EVO-006): Tree navigation
-// Why:
-// - Vue 3 needs to traverse the DOM tree
-// Done:
-// - childNodes, firstChild, lastChild, nextSibling, previousSibling implemented
-// - ownerDocument and parentNode references maintained
-// Non-Goals:
-// - Do not implement NodeList as live collection (use array)
-// - Do not implement complex tree algorithms
 
-// DONE(EVO-009): Vue-specific DOM APIs
-// Why:
-// - Vue 3 requires additional DOM APIs for rendering
-// Done:
-// - cloneNode, isEqualNode, isSameNode, contains implemented
-// - APIs match browser behavior for Vue compatibility
-// Non-Goals:
-// - Do not implement all DOM4 APIs
-// - Do not implement deprecated APIs
 
-// DONE(EVO-012): EventTarget interface
-// Why:
-// - UI testing needs to dispatch and handle events
-// Done:
-// - addEventListener, removeEventListener, dispatchEvent implemented
-// - Events bubble through DOM tree (capture phase added by EVO-014)
-// Non-Goals:
-// - Do not implement full DOM event spec
 
-// DONE(EVO-013): Event classes and common event types
-// Why:
-// - Common widget events needed for UI testing
-// Done:
-// - Event base class with type, target, bubbles, cancelable
-// - MouseEvent, UIEvent, CustomEvent implemented
-// Non-Goals:
-// - Do not implement all event types
-// - Do not implement browser-default actions
 
-// DONE(EVO-014): Event propagation
-// Why:
-// - Events need to propagate through DOM for proper handling
-// Done:
-// - Capture and bubble phases implemented
-// - Event path calculation works correctly
-// Non-Goals:
-// - Do not implement event retargeting
-// - Do not implement shadow DOM event handling
 
-// DONE(EVO-015): Event control methods
-// Why:
-// - Event handlers need to control propagation
-// Done:
-// - stopPropagation, stopImmediatePropagation, preventDefault implemented
-// - Methods work correctly during event dispatch
-// Non-Goals:
-// - Do not implement default browser actions
-// - Do not implement async event handling
 
-// DONE(EVO-031): Add Comment node type and document.createComment
-// Why:
-// - Vue 3 inserts comment markers for conditional and list rendering and text anchors.
-// Done:
-// - Comment nodes exist with nodeType 8 and serialize as <!--...-->.
-// - document.createComment(text) creates them and they participate in tree navigation and serialization.
-// Non-Goals:
-// - Do not implement CDATA or processing-instruction nodes.
 (function(global) {
-    // DONE(EVO-041): Add Element innerHTML getter/setter
-    // Why:
-    // - Vue 3 assigns innerHTML for v-html and static-content insertion, then reads back parsed child nodes.
-    // Done:
-    // - innerHTML getter serializes children; setter replaces children by parsing the well-formed HTML subset Vue emits (nested elements, text, attributes).
-    // - Parsed content does not execute scripts.
-    // Non-Goals:
-    // - Do not implement a full HTML5 parser or error recovery.
     function TextNode(text) {
         this.nodeType = 3;
         this.nodeName = '#text';
@@ -1127,14 +1013,6 @@
     var VOID_ELEMENTS = {area: 1, br: 1, col: 1, embed: 1, hr: 1, img: 1, input: 1,
         link: 1, meta: 1, param: 1, source: 1, track: 1, wbr: 1};
 
-    // DONE(EVO-051): Add DocumentFragment and template element content support
-    // Why:
-    // - Vue 3 inserts hoisted static content through a template element's fragment.
-    // Done:
-    // - DocumentFragment exists with nodeType 11, childNodes, and appendChild/insertBefore semantics that move children into the fragment.
-    // - document.createDocumentFragment() creates one, and <template>.content returns a fragment.
-    // Non-Goals:
-    // - Do not implement shadow DOM or inert template semantics beyond content access.
 
     // EVO-051: DocumentFragment, a lightweight container whose children can be
     // moved into the document; backs <template>.content
@@ -1537,43 +1415,9 @@
     };
 })(globalThis);
 
-// DONE(EVO-121): Add form control value state (value and checked)
-// Why:
-// - Vue's v-model and the Python interaction helpers read and write value and checked on inputs, textareas, and selects. Without these properties, typing and form testing cannot update state.
-// Done:
-// - input and textarea elements expose a working value property.
-// - select reflects the chosen option's value; checkbox and radio expose checked.
-// - Setting these properties is visible to JavaScript code.
-// Non-Goals:
-// - Do not implement validity, constraint validation, or form submission default actions.
-// - Do not implement focus or selection APIs.
 
-// DONE(EVO-131): Expose the Element constructor and define an SVGElement global so Vue 3's mount path can run namespace and instanceof checks and mount without a ReferenceError
-// Why:
-// - Vue 3's mount path resolves the container namespace with `container instanceof SVGElement` and checks `el instanceof Element` before setting data-v-app; without these globals, mounting throws a ReferenceError.
-// Done:
-// - Element is exposed as a global; document.createElement elements are instanceof Element.
-// - SVGElement is defined as an Element subclass; typeof SVGElement is 'function' and instanceof checks run without throwing.
-// - Vue.createApp({ template: ... }).mount('#app') renders into the virtual DOM without a ReferenceError.
-// Non-Goals:
-// - Do not add createElementNS or SVG element creation; namespace-aware SVG rendering belongs to EVO-010/EVO-011.
 
-// DONE(EVO-141): Add Element style property with CSS declaration access and serialization to a style attribute
-// Why:
-// - Vue templates with style="..." throw "invalid 'in' operand" at mount (the style gap affects plain HTML too), React's render path sets styles through el.style (EVO-211), and react.py's style shim exists only because Element.style is missing.
-// Done:
-// - Every element exposes a style object backed by the style attribute as the source of truth.
-// - style.color = 'red' and style['font-size'] = '10px' write declarations; reading a declared property returns its value, otherwise ''.
-// - style.setProperty(name, value, priority), getPropertyValue(name), and removeProperty(name) manipulate single declarations; '' or null values remove the declaration.
-// - style.cssText reads and writes the whole declaration list.
-// - Mutations serialize to the style attribute, so html() shows e.g. style="color: red; font-size: 16px;" and setAttribute('style', ...) round-trips.
-// Non-Goals:
-// - Do not implement computed styles, cascade, shorthand expansion, or vendor-prefix handling beyond camelCase-to-dash conversion.
-// - Do not expose a global CSSStyleDeclaration constructor.
 
-// DONE(EVO-151): Add setAttributeNS getAttributeNS and removeAttributeNS for namespace-scoped attributes such as xlink:href
-// Why:
-// - Vue mounts SVG templates with xlink:href via setAttributeNS and removes the binding via
 //   removeAttributeNS, so templates like <use xlink:href="#icon"> threw "not a function" at mount;
 //   ReactDOM's SVG attribute path (attributeNamespace) also calls setAttributeNS.
 // Done:
@@ -1587,9 +1431,6 @@
 // - Do not implement hasAttributeNS or prefix resolution on plain setAttribute; unprefixed
 //   attributes set via setAttribute stay namespace-less in this virtual DOM.
 
-// DONE(EVO-161): Add KeyboardEvent class exposing key code and modifier flags
-// Why:
-// - type_text must dispatch keydown, keypress, and keyup before the input event (EVO-171) so
 //   keyboard handlers observe the pressed key; the BDD scenario expects events with key "a", so
 //   a KeyboardEvent constructor carrying key and modifier state must exist first.
 // Done:
@@ -1601,9 +1442,6 @@
 // - Do not implement key auto-repeat synthesis, focus or selection state, or input method
 //   composition (isComposing).
 
-// DONE(EVO-231): Add Element.classList (add, remove, toggle, contains, item, length) backed by the class attribute so component and test code can manipulate class lists and html() reflects them
-// Why:
-// - The BDD spec F-DOM-ELEMENT-API-S001/S002 asserts classList.add/remove/toggle round-trip
 //   through serialized HTML, and Svelte's runtime toggle_class helper calls el.classList.toggle
 //   for class: directives, so a live class list must exist before framework work builds on it.
 // Done:
@@ -1618,9 +1456,6 @@
 // - Do not expose a global DOMTokenList constructor or support iteration (forEach/entries);
 //   the class attribute remains the single source of truth.
 
-// DONE(EVO-232): Add Element.matches(selector) using the existing CSS selector engine so code can test whether an element matches a selector
-// Why:
-// - Component and test code needs a single-element selector test (BDD spec F-DOM-ELEMENT-API-S003 asserts
 //   div.matches('.note') is true and div.matches('#missing') is false); matches is also the primitive
 //   Element.closest (EVO-233) builds on, so it unblocks the next evolution.
 // Done:
@@ -1633,9 +1468,6 @@
 // - Do not implement selector lists (comma-separated), pseudo-classes, or new engine syntax; the
 //   selector engine's supported surface is unchanged.
 
-// DONE(EVO-233): Add Element.closest(selector) using the existing CSS selector engine so event delegation code can find the nearest matching ancestor
-// Why:
-// - Event delegation code (e.g. a click handler that routes on e.target.closest('.item')) needs
 //   the nearest matching ancestor; closest completes the selector API surface next to matches
 //   (EVO-232), whose selector engine it reuses.
 // Done:
@@ -1650,9 +1482,6 @@
 // - Do not implement selector lists (comma-separated), pseudo-classes, or new engine syntax;
 //   the selector engine's supported surface is unchanged.
 
-// DONE(EVO-234): Add Element.dataset exposing data-* attributes as camelCase properties so component code reads and writes data attributes and html() reflects them
-// Why:
-// - Component and test code reads and writes data attributes as element metadata
 //   (e.g. el.dataset.userId), and dataset completes the live attribute views next
 //   to style (EVO-141) and classList (EVO-231), getting html() serialization for
 //   free because every mutation writes the underlying attribute.

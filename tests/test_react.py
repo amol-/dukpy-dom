@@ -1,9 +1,9 @@
 """The pinned React bundles load offline, expose usable globals, and mount."""
 
+import os
 import shutil
 
 from dukpy_dom.interpreter import VirtualDomInterpreter
-from dukpy_dom.react import _REACT, _REACT_DOM_CLIENT, load_react
 from dukpy_dom.testing import DomInteractor
 
 
@@ -15,7 +15,7 @@ def _mounted(component_js):
     must not be a DOM node.
     """
     interpreter = VirtualDomInterpreter()
-    load_react(interpreter)
+    interpreter.load_framework("react", "react-dom")
     interpreter.evaljs(
         "var root = document.createElement('div'); root.id = 'root';"
         "document.body.appendChild(root);" + component_js
@@ -23,17 +23,17 @@ def _mounted(component_js):
     return interpreter
 
 
-def test_load_react_exposes_react_globals():
+def test_load_framework_react_exposes_react_globals():
     interpreter = VirtualDomInterpreter()
-    load_react(interpreter)
+    interpreter.load_framework("react", "react-dom")
     assert interpreter.evaljs("typeof React;") == "object"
     assert interpreter.evaljs("typeof ReactDOM;") == "object"
     assert interpreter.evaljs("typeof ReactDOM.createRoot;") == "function"
 
 
-def test_load_react_leaves_element_style_intact():
+def test_load_framework_react_leaves_element_style_intact():
     interpreter = VirtualDomInterpreter()
-    load_react(interpreter)
+    interpreter.load_framework("react", "react-dom")
     assert interpreter.evaljs(
         "typeof document.createElement('div').style;"
     ) == "object"
@@ -54,7 +54,7 @@ def test_create_root_renders_into_get_element_by_id_container():
     # Mirrors the mount scenario: the container is located with
     # document.getElementById before createRoot mounts into it.
     interpreter = VirtualDomInterpreter()
-    load_react(interpreter)
+    interpreter.load_framework("react", "react-dom")
     interpreter.evaljs(
         "document.body.innerHTML = '<div id=\"root\"></div>';"
         "var el = React.createElement('div', null, 'Hello React');"
@@ -91,18 +91,14 @@ def test_later_set_state_rerenders_mounted_component():
     assert "Count: 42" in interpreter.html()
 
 
-def test_load_react_loads_user_provided_bundles(tmp_path):
+def test_load_framework_react_loads_user_provided_bundles(tmp_path):
     # User-provided builds replace the pinned ones.
     react_bundle = tmp_path / "react.production.min.js"
     react_bundle.write_text("var React = {version: '9.9.9'};", encoding="utf-8")
     react_dom_bundle = tmp_path / "react-dom.production.min.js"
     react_dom_bundle.write_text("var ReactDOM = {version: '9.9.9'};", encoding="utf-8")
     interpreter = VirtualDomInterpreter()
-    load_react(
-        interpreter,
-        react_bundle=str(react_bundle),
-        react_dom_bundle=str(react_dom_bundle),
-    )
+    interpreter.load_framework(str(react_bundle), str(react_dom_bundle))
     assert interpreter.evaljs("React.version;") == "9.9.9"
     assert interpreter.evaljs("ReactDOM.version;") == "9.9.9"
 
@@ -111,15 +107,13 @@ def test_user_provided_bundles_mount_component(tmp_path):
     # The real builds loaded from user paths (not the internal pinned defaults)
     # still mount and render into html().
     react_bundle = tmp_path / "react.production.min.js"
-    shutil.copyfile(_REACT, react_bundle)
+    react_source = os.path.join(os.path.dirname(__file__), "..", "dukpy_dom", "vendor", "react.production.min.js")
+    shutil.copyfile(react_source, react_bundle)
     react_dom_bundle = tmp_path / "react-dom.production.min.js"
-    shutil.copyfile(_REACT_DOM_CLIENT, react_dom_bundle)
+    react_dom_source = os.path.join(os.path.dirname(__file__), "..", "dukpy_dom", "vendor", "react-dom.production.min.js")
+    shutil.copyfile(react_dom_source, react_dom_bundle)
     interpreter = VirtualDomInterpreter()
-    load_react(
-        interpreter,
-        react_bundle=str(react_bundle),
-        react_dom_bundle=str(react_dom_bundle),
-    )
+    interpreter.load_framework(str(react_bundle), str(react_dom_bundle))
     interpreter.evaljs(
         "document.body.innerHTML = '<div id=\"root\"></div>';"
         "var el = React.createElement('div', null, 'Hello React');"

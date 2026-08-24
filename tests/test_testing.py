@@ -4,7 +4,6 @@ import pytest
 
 from dukpy_dom.interpreter import VirtualDomInterpreter
 from dukpy_dom.testing import DomAsserter, DomInspector, DomInteractor, DomWaiter
-from dukpy_dom.vue import load_vue
 
 
 @pytest.fixture
@@ -220,7 +219,7 @@ def test_trigger_event_missing_element_raises(actor):
 
 def test_click_updates_mounted_vue_component():
     interpreter = VirtualDomInterpreter()
-    load_vue(interpreter)
+    interpreter.load_framework("vue")
     actor = DomInteractor(interpreter)
     interpreter.evaljs("""
         document.body.innerHTML = '<div id="app"></div>';

@@ -137,5 +137,3 @@ appears). All wrap the same `VirtualDomInterpreter`.
 Canonical product behavior is described in [`features/`](features/).
 
 The `.feature` files are the source of truth for what the software does. They are product specifications first and executable BDD scenarios second.
-
-Implementation and delivery tracking belongs outside this directory. Stable feature and scenario IDs let other workflows refer back to the product behavior without making the spec a status surface.

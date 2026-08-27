@@ -5,5 +5,3 @@ build/
 dist/
 *.egg-info/
 .venv/
-.plan/
-Evolutions.txt

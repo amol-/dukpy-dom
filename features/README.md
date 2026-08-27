@@ -8,11 +8,7 @@ The `.feature` files are:
 - executable BDD scenarios
 - stable contracts between product intent and implementation
 
-They are not:
-
-- test implementation files
-- implementation instructions
-- execution plans or progress trackers
+They are not test implementation files.
 
 ## Layout
 
@@ -45,8 +41,7 @@ features/
 - One externally visible behavior per scenario.
 - Every feature file has a stable `@feature:<FEATURE-ID>` tag.
 - Every scenario has a stable `@id:<SCENARIO-ID>` tag.
-- IDs must not change after they are referenced by plans, tests, or documentation.
+- IDs must not change after they are referenced by tests or documentation.
 - Step wording is part of the spec API.
 - Prefer concrete examples over abstract prose.
 - Prefer product vocabulary from `glossary.md`.
-- Do not track implementation status here.

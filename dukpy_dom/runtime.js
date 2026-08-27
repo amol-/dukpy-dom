@@ -27,8 +27,8 @@
         set: function(value) { this.nodeValue = String(value); }
     });
 
-    // EVO-223: CharacterData data accessor. Svelte's set_data reads and
-    // writes text.data, so without this the re-render silently vanishes:
+    // CharacterData data accessor. Svelte's set_data reads and writes
+    // text.data, so without this the re-render silently vanishes:
     // toHTML() reads nodeValue but the write lands on a plain 'data'
     // property.
     Object.defineProperty(TextNode.prototype, 'data', {
@@ -36,7 +36,7 @@
         set: function(value) { this.nodeValue = String(value); }
     });
 
-    // EVO-031: Comment node, a leaf node type like TextNode
+    // Comment node, a leaf node type like TextNode.
     function Comment(text) {
         this.nodeType = 8;
         this.nodeName = '#comment';
@@ -54,7 +54,7 @@
         set: function(value) { this.nodeValue = String(value); }
     });
 
-    // EVO-223: data aliases nodeValue on Comment too, matching CharacterData.
+    // data aliases nodeValue on Comment too, matching CharacterData.
     Object.defineProperty(Comment.prototype, 'data', {
         get: function() { return this.nodeValue; },
         set: function(value) { this.nodeValue = String(value); }
@@ -129,7 +129,7 @@
         return oldChild;
     };
 
-    // EVO-012: EventTarget interface
+    // EventTarget interface.
     Element.prototype.addEventListener = function(type, listener, capture) {
         if (typeof listener !== 'function') {
             return;
@@ -164,13 +164,12 @@
         }
     };
 
-    // EVO-014: Event propagation over the event path (target and its
-    // ancestors). Listeners fire root-to-target in the capture phase, all on
-    // the target, then target-to-root in the bubble phase when the event
-    // bubbles.
-    // EVO-015: dispatch honors the stop flags between phases and between
-    // nodes. The flags are reset on each dispatch so an event object can be
-    // dispatched again.
+    // Event propagation over the event path (target and its ancestors).
+    // Listeners fire root-to-target in the capture phase, all on the target,
+    // then target-to-root in the bubble phase when the event bubbles.
+    // Dispatch honors the stop flags between phases and between nodes. The
+    // flags are reset on each dispatch so an event object can be dispatched
+    // again.
     Element.prototype.dispatchEvent = function(event) {
         event.target = event.target || this;
         event.__stopPropagation = false;
@@ -222,7 +221,7 @@
         return Boolean(capture);
     }
 
-    // EVO-013: Event classes and common event types
+    // Event classes and common event types.
     function Event(type, options) {
         options = options || {};
         this.type = String(type);
@@ -232,10 +231,10 @@
         this.defaultPrevented = false;
     }
 
-    // EVO-015: Event control methods. stopPropagation halts the event's
-    // remaining path (other nodes and phases); stopImmediatePropagation also
-    // skips the current node's remaining listeners; preventDefault marks the
-    // event canceled when it is cancelable.
+    // Event control methods. stopPropagation halts the event's remaining path
+    // (other nodes and phases); stopImmediatePropagation also skips the
+    // current node's remaining listeners; preventDefault marks the event
+    // canceled when it is cancelable.
     Event.prototype.stopPropagation = function() {
         this.__stopPropagation = true;
     };
@@ -329,7 +328,7 @@
         return Object.prototype.hasOwnProperty.call(this.attributes, String(name));
     };
 
-    // EVO-151: Namespace-scoped attributes, e.g. xlink:href on SVG elements.
+    // Namespace-scoped attributes, e.g. xlink:href on SVG elements.
     // setAttributeNS stores the attribute under its qualified name so html()
     // serialization and querySelector see it, and records the namespace next
     // to the value; getAttributeNS/removeAttributeNS match attributes by
@@ -390,10 +389,10 @@
             : null;
     }
 
-    // EVO-141: Element.style is a live view over the style attribute. Each
-    // access returns a fresh declaration object that parses the current
-    // attribute, so setAttribute/removeAttribute stay the source of truth and
-    // every mutation serializes back to the attribute.
+    // Element.style is a live view over the style attribute. Each access
+    // returns a fresh declaration object that parses the current attribute, so
+    // setAttribute/removeAttribute stay the source of truth and every mutation
+    // serializes back to the attribute.
     Object.defineProperty(Element.prototype, 'style', {
         get: function() {
             return createStyleDeclaration(this);
@@ -539,13 +538,13 @@
         });
     }
 
-    // EVO-234: Element.dataset is a live view over the element's data-*
-    // attributes. Each access returns a fresh Proxy that maps camelCase
-    // property names to dashed attribute names (fooBar -> data-foo-bar), so
-    // component code reads and writes data attributes directly against the
-    // attribute store, which stays the source of truth: setAttribute and
-    // removeAttribute changes are visible to the next access, and every
-    // mutation serializes back, showing up in html().
+    // Element.dataset is a live view over the element's data-* attributes.
+    // Each access returns a fresh Proxy that maps camelCase property names to
+    // dashed attribute names (fooBar -> data-foo-bar), so component code reads
+    // and writes data attributes directly against the attribute store, which
+    // stays the source of truth: setAttribute and removeAttribute changes are
+    // visible to the next access, and every mutation serializes back, showing
+    // up in html().
     Object.defineProperty(Element.prototype, 'dataset', {
         get: function() {
             var element = this;
@@ -601,13 +600,13 @@
         set: function(value) { this.setAttribute('class', value); }
     });
 
-    // EVO-231: Element.classList is a live DOMTokenList view over the class
-    // attribute: each access re-parses the attribute, so className and
-    // setAttribute('class', ...) changes are visible and mutations serialize
-    // back, showing up in html(). add/remove/toggle take one or more tokens;
-    // empty or whitespace-containing tokens are ignored so they never corrupt
-    // the serialized class attribute. toggle(token, force) returns whether the
-    // token is present afterwards, per the DOM.
+    // Element.classList is a live DOMTokenList view over the class attribute:
+    // each access re-parses the attribute, so className and setAttribute
+    // changes are visible and mutations serialize back, showing up in html().
+    // add/remove/toggle take one or more tokens; empty or whitespace-containing
+    // tokens are ignored so they never corrupt the serialized class attribute.
+    // toggle(token, force) returns whether the token is present afterwards,
+    // per the DOM.
     function ClassList(element) {
         this.element = element;
     }
@@ -690,7 +689,7 @@
         }
     });
 
-    // EVO-006: child and sibling navigation, computed from childNodes
+    // Child and sibling navigation, computed from childNodes.
     function defineSiblingGetters(proto) {
         Object.defineProperty(proto, 'nextSibling', {
             get: function() {
@@ -730,7 +729,7 @@
         }
     });
 
-    // EVO-009: Vue-specific DOM APIs, shared by text nodes and elements
+    // Vue-specific DOM APIs, shared by text nodes and elements.
     function defineNodeApis(proto) {
         proto.cloneNode = function(deep) {
             if (this.nodeType === 3) {
@@ -803,7 +802,7 @@
     defineNodeApis(Comment.prototype);
     defineNodeApis(Element.prototype);
 
-    // EVO-041: Element innerHTML getter/setter
+    // Element innerHTML getter/setter.
     Object.defineProperty(Element.prototype, 'innerHTML', {
         get: function() {
             return this.childNodes.map(function(child) {
@@ -822,7 +821,7 @@
         }
     });
 
-    // EVO-121: form control value and checked state
+    // Form control value and checked state.
     // value reads the value attribute on inputs, the text on textareas, and
     // the selected option on selects; setting select.value selects the matching
     // option. checked is a boolean on checkbox/radio inputs.
@@ -1014,8 +1013,8 @@
         link: 1, meta: 1, param: 1, source: 1, track: 1, wbr: 1};
 
 
-    // EVO-051: DocumentFragment, a lightweight container whose children can be
-    // moved into the document; backs <template>.content
+    // DocumentFragment, a lightweight container whose children can be moved
+    // into the document; backs <template>.content.
     function DocumentFragment() {
         this.nodeType = 11;
         this.nodeName = '#document-fragment';
@@ -1051,10 +1050,10 @@
         return element;
     };
 
-    // EVO-010: namespace-aware element creation. Vue 3 calls createElementNS
-    // for SVG elements; the SVG namespace yields SVGElement instances so
-    // namespace and instanceof checks stay consistent, other namespaces yield
-    // plain elements like in the DOM.
+    // Namespace-aware element creation. Vue 3 calls createElementNS for SVG
+    // elements; the SVG namespace yields SVGElement instances so namespace
+    // and instanceof checks stay consistent, other namespaces yield plain
+    // elements like in the DOM.
     Document.prototype.createElementNS = function(namespace, tagName) {
         var element = String(namespace) === 'http://www.w3.org/2000/svg'
             ? new SVGElement(tagName)
@@ -1082,28 +1081,28 @@
         return fragment;
     };
 
-    // EVO-211: React's event system attaches a "selectionchange" listener to
-    // the document (the root container's ownerDocument). The listener
-    // machinery is element-agnostic (it only touches __listeners and
-    // parentNode), so the Document reuses Element's EventTarget methods; a
-    // document event's path is just the document itself.
+    // React's event system attaches a "selectionchange" listener to the
+    // document (the root container's ownerDocument). The listener machinery is
+    // element-agnostic (it only touches __listeners and parentNode), so the
+    // Document reuses Element's EventTarget methods; a document event's path
+    // is just the document itself.
     Document.prototype.addEventListener = Element.prototype.addEventListener;
     Document.prototype.removeEventListener = Element.prototype.removeEventListener;
     Document.prototype.dispatchEvent = Element.prototype.dispatchEvent;
 
-    // EVO-211: getElementById backs the mount scenario
+    // getElementById supports React's mount path
     // (ReactDOM.createRoot(document.getElementById('root'))); the selector
     // engine already parses #id, so this is a thin wrapper.
     Document.prototype.getElementById = function(id) {
         return this.querySelector('#' + String(id));
     };
 
-    // EVO-020: CSS selector engine. querySelector/querySelectorAll locate
-    // elements by tag name, #id, .class, [attr], [attr=value], the descendant
-    // combinator (space) and the child combinator (>). Element queries search
-    // only the element's descendants; document queries search the whole tree.
-    // querySelectorAll returns a plain array in document order and
-    // querySelector returns the first match or null.
+    // CSS selector engine. querySelector/querySelectorAll locate elements by
+    // tag name, #id, .class, [attr], [attr=value], the descendant combinator
+    // (space) and the child combinator (>). Element queries search only the
+    // element's descendants; document queries search the whole tree.
+    // querySelectorAll returns a plain array in document order and querySelector
+    // returns the first match or null.
     Document.prototype.querySelector = function(selector) {
         return querySelectorAllInternal(this, selector)[0] || null;
     };
@@ -1258,12 +1257,12 @@
         return false;
     }
 
-    // EVO-232: Element.matches tests whether the element itself matches a
-    // selector, reusing the same parseSelector/matchesChain engine as
-    // querySelectorAll: the element is the subject of the last compound, so
-    // complex selectors like 'div > p' check the parent chain exactly the way
-    // a scoped query would. Empty or whitespace-only selectors return false,
-    // matching querySelectorAll's empty-selector behavior.
+    // Element.matches tests whether the element itself matches a selector,
+    // reusing the same parseSelector/matchesChain engine as querySelectorAll:
+    // the element is the subject of the last compound, so complex selectors
+    // like 'div > p' check the parent chain exactly the way a scoped query
+    // would. Empty or whitespace-only selectors return false, matching
+    // querySelectorAll's empty-selector behavior.
     Element.prototype.matches = function(selector) {
         selector = String(selector).trim();
         if (!selector) {
@@ -1273,11 +1272,12 @@
         return matchesChain(this, parts, parts.length - 1);
     };
 
-    // EVO-233: Element.closest returns the nearest element ancestor (including
-    // the element itself) that matches a selector, or null. It reuses matches,
-    // so empty selectors yield null and invalid selectors throw exactly like
-    // matches. The walk stops at the first non-element ancestor (e.g. the
-    // DocumentFragment behind <template>.content), which has no matches method.
+    // Element.closest returns the nearest element ancestor (including the
+    // element itself) that matches a selector, or null. It reuses matches, so
+    // empty selectors yield null and invalid selectors throw exactly like
+    // matches. The walk stops at the first non-element ancestor (for example,
+    // the DocumentFragment behind <template>.content), which has no matches
+    // method.
     Element.prototype.closest = function(selector) {
         for (var element = this; element && element.nodeType === 1; element = element.parentNode) {
             if (element.matches(selector)) {
@@ -1308,20 +1308,19 @@
         return escapeText(value).replace(/"/g, '&quot;');
     }
 
-    // EVO-131: SVGElement global so Vue 3's namespace and instanceof checks
-    // run. SVGElement inherits from Element; createElementNS creates SVG
-    // instances, while createElement elements are not instanceof SVGElement.
+    // SVGElement global so Vue 3's namespace and instanceof checks run.
+    // SVGElement inherits from Element; createElementNS creates SVG instances,
+    // while createElement elements are not instanceof SVGElement.
     function SVGElement(tagName) {
         Element.call(this, tagName);
     }
     SVGElement.prototype = Object.create(Element.prototype);
     SVGElement.prototype.constructor = SVGElement;
 
-    // EVO-211: React's commit phase checks the focused element with
-    // `b instanceof window.HTMLIFrameElement`; without a constructor the
-    // check throws "invalid 'instanceof' right operand". The empty
-    // constructor keeps the check false, as no virtual DOM element is an
-    // iframe.
+    // React's commit phase checks the focused element with
+    // `b instanceof window.HTMLIFrameElement`; without a constructor the check
+    // throws "invalid 'instanceof' right operand". The empty constructor keeps
+    // the check false, as no virtual DOM element is an iframe.
     global.HTMLIFrameElement = function() {};
 
     var document = new Document();
@@ -1338,7 +1337,7 @@
     global.CustomEvent = CustomEvent;
     global.KeyboardEvent = KeyboardEvent;
 
-    // EVO-111: document lifecycle helpers (reset, snapshot, restore)
+    // Document lifecycle helpers (reset, snapshot, restore).
     var __snapshots = {};
     var __snapshotCounter = 0;
 
@@ -1383,12 +1382,12 @@
         __replaceDocument(new Document());
     };
 
-    // EVO-211: React's scheduler needs a way to run a callback later; with no
+    // React's scheduler needs a way to run a callback later; with no
     // setImmediate/MessageChannel in dukpy it falls back to setTimeout. dukpy
-    // drains the promise microtask queue at every evaljs boundary (EVO-091),
-    // so queueing on a microtask runs the callback before the next evaljs
-    // body executes -- render() and event-driven re-renders commit by the
-    // time the test reads html(). Real delays are not simulated.
+    // drains the promise microtask queue at every evaljs boundary, so queueing
+    // on a microtask runs the callback before the next evaljs body executes --
+    // render() and event-driven re-renders commit by the time the test reads
+    // html(). Real delays are not simulated.
     //
     // The callback must NOT run synchronously: react-dom assigns
     // root.callbackNode only after scheduleCallback returns, and
@@ -1414,87 +1413,3 @@
         __replaceDocument(__snapshots[id]);
     };
 })(globalThis);
-
-
-
-
-//   removeAttributeNS, so templates like <use xlink:href="#icon"> threw "not a function" at mount;
-//   ReactDOM's SVG attribute path (attributeNamespace) also calls setAttributeNS.
-// Done:
-// - Element exposes setAttributeNS(namespace, qualifiedName, value), getAttributeNS(namespace,
-//   localName), and removeAttributeNS(namespace, localName).
-// - setAttributeNS stores the attribute under its qualified name, so html() serialization and
-//   querySelector see it, and records the namespace next to the value.
-// - getAttributeNS/removeAttributeNS match attributes by localName plus namespace; attributes set
-//   without a namespace (plain setAttribute) match null-namespace lookups.
-// Non-Goals:
-// - Do not implement hasAttributeNS or prefix resolution on plain setAttribute; unprefixed
-//   attributes set via setAttribute stay namespace-less in this virtual DOM.
-
-//   keyboard handlers observe the pressed key; the BDD scenario expects events with key "a", so
-//   a KeyboardEvent constructor carrying key and modifier state must exist first.
-// Done:
-// - KeyboardEvent is exposed as a global constructor and a UIEvent subclass like MouseEvent.
-// - new KeyboardEvent('keydown', {key: 'a', shiftKey: true}) exposes key, code, keyCode, repeat,
-//   ctrlKey, shiftKey, altKey, and metaKey with the given values and DOM defaults otherwise.
-// - getModifierState('Shift'/'Control'/'Alt'/'Meta') returns the matching modifier flag.
-// Non-Goals:
-// - Do not implement key auto-repeat synthesis, focus or selection state, or input method
-//   composition (isComposing).
-
-//   through serialized HTML, and Svelte's runtime toggle_class helper calls el.classList.toggle
-//   for class: directives, so a live class list must exist before framework work builds on it.
-// Done:
-// - Every element exposes classList, a live DOMTokenList view over the class attribute: each
-//   access re-parses the attribute, so className and setAttribute('class', ...) changes are
-//   visible and mutations serialize back, showing up in html().
-// - add(...)/remove(...) accept one or more tokens, ignoring duplicates and empty or
-//   whitespace-containing tokens; toggle(token, force) returns whether the token is present
-//   afterwards; contains(token) and item(index) read the current token list; length reflects
-//   the current token count.
-// Non-Goals:
-// - Do not expose a global DOMTokenList constructor or support iteration (forEach/entries);
-//   the class attribute remains the single source of truth.
-
-//   div.matches('.note') is true and div.matches('#missing') is false); matches is also the primitive
-//   Element.closest (EVO-233) builds on, so it unblocks the next evolution.
-// Done:
-// - Element.matches(selector) returns true when the element itself matches, reusing
-//   parseSelector/matchesChain with the element as the subject of the last compound, so complex
-//   selectors ('div > p') check the parent chain exactly like querySelectorAll.
-// - Empty and whitespace-only selectors return false, consistent with querySelectorAll's
-//   empty-selector behavior; invalid selectors throw like the rest of the engine.
-// Non-Goals:
-// - Do not implement selector lists (comma-separated), pseudo-classes, or new engine syntax; the
-//   selector engine's supported surface is unchanged.
-
-//   the nearest matching ancestor; closest completes the selector API surface next to matches
-//   (EVO-232), whose selector engine it reuses.
-// Done:
-// - Element.closest(selector) walks from the element up through its element ancestors and
-//   returns the first one whose matches(selector) is true, including the element itself;
-//   returns null when none matches, per the DOM.
-// - Empty and whitespace-only selectors return null and invalid selectors throw, consistent
-//   with matches.
-// - The walk stops at the first non-element ancestor (e.g. the DocumentFragment behind
-//   <template>.content), which has no matches method.
-// Non-Goals:
-// - Do not implement selector lists (comma-separated), pseudo-classes, or new engine syntax;
-//   the selector engine's supported surface is unchanged.
-
-//   (e.g. el.dataset.userId), and dataset completes the live attribute views next
-//   to style (EVO-141) and classList (EVO-231), getting html() serialization for
-//   free because every mutation writes the underlying attribute.
-// Done:
-// - Every element exposes dataset, a live Proxy view over its data-* attributes:
-//   el.dataset.fooBar reads and writes the data-foo-bar attribute (camelCase
-//   property names map to dashed attribute names; names already containing '-'
-//   map straight to data-<name>), delete el.dataset.fooBar removes the attribute,
-//   and 'fooBar' in dataset tests presence.
-// - Each access re-reads the current attributes, so setAttribute/removeAttribute
-//   changes are visible and every mutation serializes back, showing up in html().
-// - Reading a missing property returns undefined, matching the DOM.
-// Non-Goals:
-// - Do not implement iteration (Object.keys/for-in over dataset) or the spec's
-//   SyntaxError for property names starting with 'data-' or empty names; the
-//   attribute store remains the single source of truth.
